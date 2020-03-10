@@ -1,29 +1,25 @@
+import { Container, ContainerManager } from '../';
 
 class Destinations extends Container {
   constructor(state = getOption('state')) {
-    super(state, [tra, trb, trc]);
+    super({ state });
   }
 }
 
 class Finetuner extends Container {
   constructor(state = getOption('finetuner-state')) {
-    super(state, [tra, trb, trc]);
+    super({ state });
   }
 }
 
 const filterContextManager = new ContainerManager({
   destinations: Destinations,
   finetuner: Finetuner
-}, getOption('filter-context'));
+}, () => getOption('filter-context'));
 
-filterContextManager.get(() => getOption('filter-context'));
-
-/* ========================================================================== */
-
-export const Destinations = new Container(getOption('state'), [tra, trb, trc]);
+filterContextManager.getContainer(() => getOption('filter-context'));
 
 /* ========================================================================== */
-
 
 function transformA() {
   return { hi: 'hello' }
@@ -34,7 +30,6 @@ async function transformB() {
 
   return { test: x };
 }
-
 
 async function transformC({ currentState, options }) {
   if(currentState.test !== 'bla' && !options.leaveIt) {
@@ -48,5 +43,5 @@ async function transformC({ currentState, options }) {
 
 const c = new Container({}, [transformA, transformB, transformC]);
 
-c.subscribe((x) => console.log(x, 'has changed :)'));
-c.subscribe(() => console.log(c.state, 'from subscription'));
+c.onUpdate((x) => console.log(x, 'has changed :)'));
+c.onUpdate(() => console.log(c.state, 'from subscription'));

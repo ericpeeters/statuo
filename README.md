@@ -33,8 +33,8 @@ const container = new CounterContainer();
 
 container.onUpdate(({ updatedState }) => console.log(updatedState));
 
-const increment = (container) => container.update({ count: container.state.count + 1 });
-const decrement = (container) => container.update({ count: container.state.count - 1 });
+const increment = container => container.update({ count: container.state.count + 1 });
+const decrement = container => container.update({ count: container.state.count - 1 });
 
 increment(container); // Logs { count: 2 } from the `onUpdate` handler
 decrement(container); // Logs { count: 1 } from the `onUpdate` handler
@@ -117,6 +117,8 @@ container.onUpdate(({ currentState }) => {
 });
 ```
 
+---
+
 ### ContainerManager
 
 Since we now use containers to define our state we need a way to tell our components which container to pay attention to.
@@ -143,5 +145,3 @@ const currentContainer = manager.getContainer();
 Here we see an example of 2 containers being registered to a ContainerManager. The trick is in the second parameter, this parameter is either a string with the key of the container or a function that defines how to retrieve the key. The key can also be provided by calling `.getContainer(key)`. In the example above, if our HTML has `<body data-container="filters" />`, it will create an instance of the FilterContainer and pass it to all components that ask the manager for a reference.
 
 This allows us to 'inject' the right container to our components or features when they need it and makes sure they all look at the same instance.
-
-

@@ -8,8 +8,18 @@
     "example": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "./build/index.sh",
+    "test": "jest"
   },
   "author": "Eric Peeters",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.7",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.8.7",
+    "@ictoanen/pub-sub": "^2.0.0",
+    "babel-jest": "^25.1.0",
+    "jest": "^25.1.0"
+  }
 }

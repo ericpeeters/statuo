@@ -1,0 +1,18 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+# top-most EditorConfig file
+root = false
+
+# Windows-style newlines with a newline ending every file
+[*]
+end_of_line = crlf
+insert_final_newline = true
+
+# Set default charset
+[*.{html,js,scss,ts}]
+charset = utf-8
+
+# Tab indentation (no size specified)
+[*.{html,js,scss,ts}]
+indent_style = tab
+indent_size = 4

@@ -1,32 +1,4 @@
-
-
-/* ========================================================================== */
-
-const createEventHub = () => ({
-  hub: Object.create(null),
-  emit(event, data) {
-    (this.hub[event] || []).forEach(handler => handler(data));
-  },
-  on(event, handler) {
-    if (!this.hub[event]) this.hub[event] = [];
-    this.hub[event].push(handler);
-  },
-  off(event, handler) {
-    const i = (this.hub[event] || []).findIndex(h => h === handler);
-    if (i > -1) this.hub[event].splice(i, 1);
-    if (this.hub[event].length === 0) delete this.hub[event];
-  }
-});
-
-const hub = createEventHub();
-
-function publish(event, data) {
-  hub.emit(event, data);
-}
-
-function subscribe(event, handler) {
-  hub.on(event, handler);
-}
+import { publish, subscribe } from '@ictoanen/pub-sub';
 
 /* ========================================================================== */
 
@@ -49,10 +21,9 @@ export class Container {
   }) {
     this.state = state;
     this.transforms = transforms;
+    this.eventScope = { scope: uniqueId("container") };
 
-    this.id = uniqueId("container");
-
-    this.publish(this.events.ready);
+    publish(this.events.ready, null, this.eventScope);
   }
 
   events = {
@@ -67,46 +38,43 @@ export class Container {
 
   /* ======================================================================== */
 
-  getUniqueEvent(event) {
-    return `${event}_${this.id}`;
-  }
-
-  publish(event, payload) {
-    publish(this.getUniqueEvent(event), payload);
-  }
-
-  subscribe(event, callback) {
-    if(!event in this.events) {
-      throw new ReferenceError(`
-        Event not found in predefined events,
-        given: ${event}, expected ${this.events.keys()}
-      `);
-    }
-
-    subscribe(this.getUniqueEvent(event), ({ detail }) => callback({
-      currentState: this.state,
-      updatedState: detail.updatedState
-    }));
-  }
-
-  /* ========================================================================== */
-
   onReady(callback) {
-    this.subscribe(this.events.ready, callback);
+    subscribe(
+      this.events.ready,
+      ({ detail }) => callback({
+        currentState: this.state,
+        updatedState: detail.updatedState
+      }),
+      this.eventScope
+    );
   }
 
   onUpdate(callback) {
-    this.subscribe(this.events.update, callback);
+    subscribe(
+      this.events.update,
+      ({ detail }) => callback({
+        currentState: this.state,
+        updatedState: detail.updatedState
+      }),
+      this.eventScope
+    );
   }
 
   onBeforeUpdate(callback) {
-    this.subscribe(this.events.beforeUpdate, callback);
+    subscribe(
+      this.events.beforeUpdate,
+      ({ detail }) => callback({
+        currentState: this.state,
+        updatedState: detail.updatedState
+      }),
+      this.eventScope
+    );
   }
 
   /* ======================================================================== */
 
   update = async(updatedState, options = {}) => {
-    this.publish(this.events.beforeUpdate, { updatedState });
+    publish(this.events.beforeUpdate, { updatedState }, this.eventScope);
 
     this.state = await this.transformState(
       updatedState,
@@ -117,7 +85,7 @@ export class Container {
       options
     );
 
-    this.publish(this.events.update, { updatedState });
+    publish(this.events.update, { updatedState }, this.eventScope);
 
     return this.state;
   }

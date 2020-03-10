@@ -1,0 +1,31 @@
+language: node_js
+node_js:
+  - "lts/*"
+
+jobs:
+  include:
+    - stage: tests
+      name: "Unit tests"
+      script: npm test
+    - stage: npm release
+      name: "Release to NPM"
+      if: tag IS present
+      script: ./scripts/build.sh
+      before_deploy:
+        - |
+          function npm_dist_tag() {
+            if [[ "$TRAVIS_TAG" = *"-"* ]]; then
+              echo "beta"
+            else
+              echo "latest"
+            fi
+          }
+        - cd ./dist
+      deploy:
+        - provider: npm
+          email: "$NPM_EMAIL"
+          api_key: "$NPM_TOKEN"
+          skip_cleanup: true
+          tag: $(npm_dist_tag)
+          on:
+            tags: true
