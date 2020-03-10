@@ -17,7 +17,9 @@
 const memoize = fn => {
   const cache = new Map();
   const cached = function(val) {
-    return cache.has(val) ? cache.get(val) : cache.set(val, fn.call(this, val)) && cache.get(val);
+    return cache.has(val)
+      ? cache.get(val)
+      : cache.set(val, fn.call(this, val)) && cache.get(val);
   };
   cached.cache = cache;
   return cached;
@@ -25,7 +27,7 @@ const memoize = fn => {
 
 /* ========================================================================== */
 
-class ContainerManager {
+export class ContainerManager {
   constructor(containerMapping = {}, getKey) {
     this.containerMapping = containerMapping;
     this.getKey = getKey;
@@ -35,11 +37,11 @@ class ContainerManager {
     key => new this.containerMapping[key]()
   );
 
-  get(getKey = this.getKey) {
+  getContainer(getKey = this.getKey) {
     if(typeof getKey !== 'string' || typeof getKey !== 'function') {
       throw new TypeError('getContainer did not get a valid `getter` specified. Expected string or function.');
     }
 
-    return getInstance(typeof getKey === 'string' ? getKey : getKey());
+    return this.getInstance(typeof getKey === 'string' ? getKey : getKey());
   }
 }

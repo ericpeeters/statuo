@@ -42,11 +42,11 @@ function uniqueId(prefix = "") {
 
 /* ========================================================================== */
 
-class Container {
-  constructor(
+export class Container {
+  constructor({
     state = {},
     transforms = []
-  ) {
+  }) {
     this.state = state;
     this.transforms = transforms;
 
@@ -58,9 +58,9 @@ class Container {
   events = {
     // The updated event is fired once all middleware is done,
     // and the values inside the DataWrapper have updated correctly.
-    change: "CHANGE",
-    // The change event is fired once a value has changed.
-    beforeChange: "BEFORE_CHANGE",
+    update: "UPDATE",
+    // The update event is fired once a value has updated.
+    beforeUpdate: "BEFORE_UPDATE",
     // When the container is ready to be used.
     ready: "READY"
   };
@@ -77,10 +77,16 @@ class Container {
 
   subscribe(event, callback) {
     if(!event in this.events) {
-      throw new ReferenceError(`Event not found in predefined events, given: ${event}, expected ${this.events.keys()}`);
+      throw new ReferenceError(`
+        Event not found in predefined events,
+        given: ${event}, expected ${this.events.keys()}
+      `);
     }
 
-    subscribe(this.getUniqueEvent(event), callback);
+    subscribe(this.getUniqueEvent(event), ({ detail }) => callback({
+      currentState: this.state,
+      updatedState: detail.updatedState
+    }));
   }
 
   /* ========================================================================== */
@@ -89,32 +95,29 @@ class Container {
     this.subscribe(this.events.ready, callback);
   }
 
-  onChange(callback) {
-    this.subscribe(this.events.change, callback);
+  onUpdate(callback) {
+    this.subscribe(this.events.update, callback);
   }
 
-  onBeforeChange(callback) {
-    this.subscribe(this.events.beforeChange, callback);
+  onBeforeUpdate(callback) {
+    this.subscribe(this.events.beforeUpdate, callback);
   }
 
   /* ======================================================================== */
 
-  update = async(newState, options = {}) => {
-    this.publish(this.events.beforeChange, { changedState: newState });
+  update = async(updatedState, options = {}) => {
+    this.publish(this.events.beforeUpdate, { updatedState });
 
     this.state = await this.transformState(
-      newState,
+      updatedState,
       {
         ...this.state,
-        ...newState
+        ...updatedState
       },
       options
     );
 
-    this.publish(this.events.change, {
-      changedState: newState,
-      state: this.state
-    });
+    this.publish(this.events.update, { updatedState });
 
     return this.state;
   }
