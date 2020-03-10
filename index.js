@@ -1,4 +1,4 @@
-import { Container } from './Container';
-import { ContainerManager } from './ContainerManager'
+import { Container } from './src/Container/Container';
+import { ContainerManager } from './src/ContainerManager/ContainerManager'
 
 export { Container, ContainerManager };
