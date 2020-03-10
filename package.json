@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "An event based state management system including on demand container injection",
   "main": "index.js",
+  "repository": "https://github.com/ericpeeters/statuo",
   "directories": {
     "example": "examples"
   },
