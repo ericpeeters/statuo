@@ -1,0 +1,14 @@
+{
+  "name": "statuo",
+  "version": "0.0.1",
+  "description": "An event based state management system including on demand container injection",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Eric Peeters",
+  "license": "ISC"
+}
