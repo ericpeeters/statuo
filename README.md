@@ -1,4 +1,6 @@
-**statuo** - Container based state management
+# <img src='./logo.png' height='60' alt='Statuo logo' />
+
+Container based state management
 
 This library borrows some ideas from the Flux architecture pattern. Read more about Flux here: https://facebook.github.io/flux/.
 
