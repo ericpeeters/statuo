@@ -31,16 +31,14 @@ export class Container {
     // and the values inside the DataWrapper have updated correctly.
     update: "UPDATE",
     // The update event is fired once a value has updated.
-    beforeUpdate: "BEFORE_UPDATE",
-    // When the container is ready to be used.
-    ready: "READY"
+    beforeUpdate: "BEFORE_UPDATE"
   };
 
   /* ======================================================================== */
 
-  onReady(callback) {
+  subscribeToEvent(event, callback) {
     subscribe(
-      this.events.ready,
+      event,
       ({ detail }) => callback({
         ...detail,
         currentState: this.state
@@ -50,25 +48,11 @@ export class Container {
   }
 
   onUpdate(callback) {
-    subscribe(
-      this.events.update,
-      ({ detail }) => callback({
-        ...detail,
-        currentState: this.state
-      }),
-      this.eventScope
-    );
+    this.subscribeToEvent(this.events.update, callback);
   }
 
   onBeforeUpdate(callback) {
-    subscribe(
-      this.events.beforeUpdate,
-      ({ detail }) => callback({
-        ...detail,
-        currentState: this.state
-      }),
-      this.eventScope
-    );
+    this.subscribeToEvent(this.events.beforeUpdate, callback);
   }
 
   /* ======================================================================== */
