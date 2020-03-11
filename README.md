@@ -1,4 +1,4 @@
-# <img src='./logo.png' height='60' alt='Statuo logo' />
+# <img src='./logo-trans.png' height='60' alt='Statuo logo' />
 
 Container based state management
 
