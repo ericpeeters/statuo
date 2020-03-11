@@ -9,7 +9,8 @@
   },
   "scripts": {
     "build": "./build/index.sh",
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "jest --coverage=true"
   },
   "author": "Eric Peeters",
   "license": "MIT",

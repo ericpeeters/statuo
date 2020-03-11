@@ -42,8 +42,8 @@ export class Container {
     subscribe(
       this.events.ready,
       ({ detail }) => callback({
-        currentState: this.state,
-        updatedState: detail.updatedState
+        ...detail,
+        currentState: this.state
       }),
       this.eventScope
     );
@@ -53,8 +53,8 @@ export class Container {
     subscribe(
       this.events.update,
       ({ detail }) => callback({
-        currentState: this.state,
-        updatedState: detail.updatedState
+        ...detail,
+        currentState: this.state
       }),
       this.eventScope
     );
@@ -64,8 +64,8 @@ export class Container {
     subscribe(
       this.events.beforeUpdate,
       ({ detail }) => callback({
-        currentState: this.state,
-        updatedState: detail.updatedState
+        ...detail,
+        currentState: this.state
       }),
       this.eventScope
     );
