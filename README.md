@@ -17,11 +17,12 @@ Simple usage example:
 Create a counter state container and increment/decrement the state.
 
 ```javascript
+// x
 import { Container } from 'statuo';
 
-class CounterContainer extends Container {
+export class CounterContainer extends Container {
   constructor(initialState = { count: 1 }) {
-    super(initialState);
+    super({ state: initialState });
   }
 }
 ```
@@ -53,68 +54,84 @@ new Container({
 })
 ```
 
-When the full chain is completed and a container is done updating its state.
-
-`Container.onUpdate(({ updatedState, currentState }) => void);`
-
-Before the container starts running its update chain but is signaled to change its state.
-
-`Container.onBeforeUpdate(({ updatedState, currentState }) => void);`
-
-When a container is filled with its initial state and ready to be used.
-
-`Container.onReady(({ currentState }) => void);`
-
+```javascript
+Container.update({ count: 1 }, { options });
+```
 Update a container's state.
 
-`Container.update({ count: 1 }, { options });`
+```javascript
+Container.onUpdate(({ updatedState, currentState }) => void);
+```
+When the full chain is completed and a container is done updating its state.
+
+```javascript
+Container.onBeforeUpdate(({ updatedState, currentState }) => void);
+```
+Before the container starts running its update chain but is signaled to change its state.
+
+```javascript
+Container.onReady(({ currentState }) => void);
+```
+When a container is filled with its initial state and ready to be used.
 
 ---
 
 ### Transforms
 
-Sometimes we want certain state to always behave in a certain way. For example, having a range date picker, when we change the `startDate` we always want to flush the `endDate`.
+Sometimes we want certain state to always behave in a certain way. We can use transforms to manage pieces of state. The transforms are basically async functions that always run when a container state gets updated. Transforms work like reducer functions except they don't have to keep the entire state into account. We can just return a specific piece of state and the container will merge it.
 
-For cases like these, specific pieces of state reacting to each other we can use transforms. Transforms work like reducer functions except they don't have to react to the entire state. We can just return a specific piece of state and the container will do the rest.
+When you call `.update()` on a container instance, it will always run all transforms immediately after updating the state.
 
-We define which transforms apply to what container. The signature looks like this:
+It also allows you to pass additional options, these options will always find their way to all transforms of the container. This allows you to customize transform behavior based on options. You can invent _any_ option you need to determine which transforms should or should not run, or apply logic to a transform.
+
+An example of a transform:
 
 ```javascript
-async function transformSomething({ currentState, options }) {
-   // React to current container state and options provided to the .update() call
-   return { countMinusOne: currentState.count - 1 };
+async function transformSomething({ currentState }) {
+  return { countMinusOne: currentState.count - 1 };
 }
 ```
 
-This transform will *always* add a property to the container state called `countMinusOne`. The transforms are basically async functions that always run when a container state gets updated.
+This transform will *always* add a property to the container state called `countMinusOne`.
 
-When you call `.update()` on a container, it allows you to pass additional options, these options will always find their way to all transforms of the container. This allows you to skip transformations when specific changes occur. You can invent any options you need to determine which transforms should or should not run, or apply logic to a transform.
-
-An example of this:
+Another example of this:
 
 ```javascript
-export const container = new Container({ startDate: null, endDate: null }, [transformRangeDates]);
-```
+// x
+export async function transformResetOnMax({ updatedState, options }) {
+  if(!options.max || !updatedState.count) {
+    return;
+  }
 
-```javascript
-export async function transformRangeDates({ updatedState, options }) {
-  // When the startDate property has been updated
-  // and range date selection is active
-  if(updatedState.startDate && options.range) {
-    return { endDate: null };
+  if(updatedState.count > options.max) {
+    return { count: 0 };
   }
 }
 ```
 
 ```javascript
-datepicker.onDateSelected((selectedDate) => container.update({ startDate: selectedDate }, { range: true }));
+// y
+import { transformResetOnMax } from 'x';
 
-container.onUpdate(({ currentState }) => {
-  if(currentState.endDate === null) {
-    // Flush end date from the UI
-    // (you might not need to be this explicit when using a virtual dom library or some form of templating)
-  }
+export const container = new Container({
+  state: { count: 0 },
+  transforms: [transformResetOnMax]
 });
+```
+
+```javascript
+import { container } from 'y';
+
+const increment = container => container.update(
+  { count: container.state.count + 1 },
+  { max: 3 }
+);
+
+increment(); // state = { count: 1 }
+increment(); // state = { count: 2 }
+increment(); // state = { count: 3 }
+// Our transform makes sure the state is reset
+increment(); // state = { count: 0 }
 ```
 
 ---
@@ -123,20 +140,22 @@ container.onUpdate(({ currentState }) => {
 
 Since we now use containers to define our state we need a way to tell our components which container to pay attention to.
 
-We can create an instance and connect our components to that reference and it will work. But most of the time we want to be more dynamic. Create multiple containers or different types of containers in different situations. So, `ContainerManager` to the rescue!
+We can create an instance and connect our components to that reference and it will work. But most of the time we want to be more dynamic. Create multiple containers or different types of containers in different situations. We can use a `ContainerManager` for this.
 
-ContainerManager serves as a bridge between components and the right container at the right time. Sounds cryptic doesn't it? Lets look at some examples.
+ContainerManager serves as a bridge between components and the right container at the right time.
+
+For example:
 
 ```javascript
 // x
-const manager = new ContainerManager({
+export const manager = new ContainerManager({
   filters: FilterContainer,
   todos: TodoContainer
 }, () => document.body.getAttribute('data-container'));
 ```
 
 ```javascript
-import manager from 'x';
+import { manager } from 'x';
 
 // Retrieve the currently 'active' container
 const currentContainer = manager.getContainer();
