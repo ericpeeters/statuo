@@ -2,14 +2,14 @@ import { publish, subscribe } from '@ictoanen/pub-sub';
 
 /* ========================================================================== */
 
-function uniqueId(prefix = "") {
-  if(!uniqueId.num) {
-    uniqueId.num = 0;
+function getUniqueContainerId() {
+  if(!getUniqueContainerId.num) {
+    getUniqueContainerId.num = 0;
   }
 
-  uniqueId.num += 1;
+  getUniqueContainerId.num += 1;
 
-  return prefix + uniqueId.num. toString();
+  return `container-${getUniqueContainerId.num.toString()}`;
 }
 
 /* ========================================================================== */
@@ -21,16 +21,17 @@ export class Container {
   }) {
     this.state = state;
     this.transforms = transforms;
-    this.eventScope = { scope: uniqueId("container") };
+    this.eventScope = { scope: getUniqueContainerId() };
 
     publish(this.events.ready, null, this.eventScope);
   }
 
+  /**
+   * There are currently only two events, one before the update chain is run,
+   * and one once its done updated and we have our new state.
+   */
   events = {
-    // The updated event is fired once all middleware is done,
-    // and the values inside the DataWrapper have updated correctly.
     update: "UPDATE",
-    // The update event is fired once a value has updated.
     beforeUpdate: "BEFORE_UPDATE"
   };
 
@@ -70,6 +71,26 @@ export class Container {
     );
 
     publish(this.events.update, { updatedState }, this.eventScope);
+
+    return this.state;
+  }
+
+  delete = async(property, options = {}) => {
+    if(!property in this.state) {
+      return;
+    }
+
+    publish(this.events.beforeUpdate, {}, this.eventScope);
+
+    delete this.state[property];
+
+    this.state = await this.transformState(
+      {},
+      this.state,
+      options
+    );
+
+    publish(this.events.update, {}, this.eventScope);
 
     return this.state;
   }

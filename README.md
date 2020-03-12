@@ -56,25 +56,28 @@ new Container({
 })
 ```
 
+Update a container's state.
 ```javascript
 Container.update({ count: 1 }, { options });
 ```
-Update a container's state.
 
+
+Delete a property from the container's state.
+```javascript
+Container.delete('count', { options });
+```
+
+
+When the full chain is completed and a container is done updating its state.
 ```javascript
 Container.onUpdate(({ updatedState, currentState }) => void);
 ```
-When the full chain is completed and a container is done updating its state.
 
+
+Before the container starts running its update chain but is signaled to change its state.
 ```javascript
 Container.onBeforeUpdate(({ updatedState, currentState }) => void);
 ```
-Before the container starts running its update chain but is signaled to change its state.
-
-```javascript
-Container.onReady(({ currentState }) => void);
-```
-When a container is filled with its initial state and ready to be used.
 
 ---
 
@@ -124,16 +127,16 @@ export const container = new Container({
 ```javascript
 import { container } from 'y';
 
-const increment = container => container.update(
+const incrementUntilThree = container => container.update(
   { count: container.state.count + 1 },
   { max: 3 }
 );
 
-increment(); // state = { count: 1 }
-increment(); // state = { count: 2 }
-increment(); // state = { count: 3 }
+incrementUntilThree(); // state = { count: 1 }
+incrementUntilThree(); // state = { count: 2 }
+incrementUntilThree(); // state = { count: 3 }
 // Our transform makes sure the state is reset
-increment(); // state = { count: 0 }
+incrementUntilThree(); // state = { count: 0 }
 ```
 
 ---

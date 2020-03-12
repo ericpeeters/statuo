@@ -17,6 +17,10 @@ describe('Container tests', () => {
         await container.update({ count: 3 });
 
         expect(container.state.count).toEqual(3);
+
+        await container.delete('count');
+
+        expect(container.state.count).toBeUndefined();
     });
 
     test('Update event', async () => {
@@ -66,6 +70,37 @@ describe('Container tests', () => {
         });
 
         expect(mockFn).toHaveBeenCalledTimes(2);
+    });
+
+    test('Single transform', async () => {
+        function testTransform() {
+            if(!testTransform.num) {
+                testTransform.num = 0;
+            }
+
+            testTransform.num++;
+
+            return {
+                num: testTransform.num
+            };
+        }
+
+        const container = new Container({ state: {}, transforms: [testTransform]});
+
+        expect(container.state).toEqual({});
+
+        await container.update({ otherNum: 1 });
+
+        expect(container.state).toEqual({
+            otherNum: 1,
+            num: 1
+        });
+
+        await container.delete('otherNum');
+
+        expect(container.state).toEqual({
+            num: 2
+        });
     });
 });
 
