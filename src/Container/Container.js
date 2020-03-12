@@ -18,7 +18,7 @@ export class Container {
   constructor({
     state = {},
     transforms = []
-  }) {
+  } = {}) {
     this.state = state;
     this.transforms = transforms;
     this.eventScope = { scope: getUniqueContainerId() };
@@ -76,8 +76,8 @@ export class Container {
   }
 
   delete = async(property, options = {}) => {
-    if(!property in this.state) {
-      return;
+    if(!(property in this.state)) {
+      throw new ReferenceError(`Cannot delete property ${property} from state. State is currently: ${JSON.stringify(this.state)}`);
     }
 
     publish(this.events.beforeUpdate, {}, this.eventScope);
@@ -95,25 +95,16 @@ export class Container {
     return this.state;
   }
 
-  transformState(updatedState, state, options) {
-    return new Promise((resolve, reject) => {
-        try {
-          const transformedState = this.transforms.reduce(
-            async (currentState, transform) => ({
-                ...await currentState,
-                ...await transform({
-                  currentState,
-                  updatedState,
-                  options
-                })
-            }),
-            state
-          );
-
-          resolve(transformedState);
-        } catch(err) {
-          reject(err);
-        }
-    });
-  }
+  transformState = async(updatedState, state, options) =>
+    this.transforms.reduce(
+      async (currentState, transform) => ({
+          ...await currentState,
+          ...await transform({
+            currentState: await currentState,
+            updatedState,
+            options
+          })
+      }),
+      state
+    );
 }

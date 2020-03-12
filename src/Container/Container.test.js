@@ -6,6 +6,10 @@ describe('Container tests', () => {
 
         expect(container.state).toBeNull();
         expect(container).toBeInstanceOf(Container);
+
+        const defaultStateContainer = new Container();
+
+        expect(defaultStateContainer.state).toEqual({});
     });
 
     test('Updating state', async () => {
@@ -21,6 +25,10 @@ describe('Container tests', () => {
         await container.delete('count');
 
         expect(container.state.count).toBeUndefined();
+
+        expect(container.state).toEqual({});
+
+        await expect(container.delete('keyThatDoesNotExist')).rejects.toThrow();
     });
 
     test('Update event', async () => {
@@ -102,5 +110,28 @@ describe('Container tests', () => {
             num: 2
         });
     });
+
+    test('Multiple transforms', async () => {
+        const addPlusOneTransform = async ({ currentState }) => ({
+            plusOne: currentState.num + 1
+        }),
+        addPlusOneTimesTwoTransform = async ({ currentState }) => ({
+            plusOneTimesTwo: currentState.plusOne * 2
+        });
+
+        const container = new Container({
+            state: { num: 1 },
+            transforms: [addPlusOneTransform, addPlusOneTimesTwoTransform]
+        });
+
+        expect(container.state).toEqual({ num: 1 });
+
+        await container.update({ num: 2 });
+
+        expect(container.state.plusOne).toEqual(3);
+        expect(container.state.plusOneTimesTwo).toEqual(6);
+    });
+
+    test('State update rejected', async () => {});
 });
 
