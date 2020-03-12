@@ -1,114 +1,118 @@
-import { publish, subscribe } from '@ictoanen/pub-sub';
+import { publish, subscribe } from "@ictoanen/pub-sub";
 
 /* ========================================================================== */
 
-function uniqueId(prefix = "") {
-  if(!uniqueId.num) {
-    uniqueId.num = 0;
-  }
+function getUniqueContainerId() {
+	if (!getUniqueContainerId.num) {
+		getUniqueContainerId.num = 0;
+	}
 
-  uniqueId.num += 1;
+	getUniqueContainerId.num += 1;
 
-  return prefix + uniqueId.num. toString();
+	return `container-${getUniqueContainerId.num.toString()}`;
 }
 
 /* ========================================================================== */
 
 export class Container {
-  constructor({
-    state = {},
-    transforms = []
-  }) {
-    this.state = state;
-    this.transforms = transforms;
-    this.eventScope = { scope: uniqueId("container") };
+	constructor({ state = {}, transforms = [] } = {}) {
+		this.state = state;
+		this.transforms = transforms;
+		this.eventScope = { scope: getUniqueContainerId() };
 
-    publish(this.events.ready, null, this.eventScope);
-  }
+		publish(this.events.ready, null, this.eventScope);
+	}
 
-  events = {
-    // The updated event is fired once all middleware is done,
-    // and the values inside the DataWrapper have updated correctly.
-    update: "UPDATE",
-    // The update event is fired once a value has updated.
-    beforeUpdate: "BEFORE_UPDATE",
-    // When the container is ready to be used.
-    ready: "READY"
-  };
+	/* ======================================================================== */
 
-  /* ======================================================================== */
+	/**
+	 * There are currently only two events, one before the update chain is run,
+	 * and one once its done updated and we have our new state.
+	 */
+	events = {
+		update: "UPDATE",
+		beforeUpdate: "BEFORE_UPDATE"
+	};
 
-  onReady(callback) {
-    subscribe(
-      this.events.ready,
-      ({ detail }) => callback({
-        currentState: this.state,
-        updatedState: detail.updatedState
-      }),
-      this.eventScope
-    );
-  }
+	/* ======================================================================== */
 
-  onUpdate(callback) {
-    subscribe(
-      this.events.update,
-      ({ detail }) => callback({
-        currentState: this.state,
-        updatedState: detail.updatedState
-      }),
-      this.eventScope
-    );
-  }
+	subscribeToEvent(event, callback) {
+		subscribe(
+			event,
+			({ detail }) =>
+				callback({
+					...detail,
+					currentState: this.state
+				}),
+			this.eventScope
+		);
+	}
 
-  onBeforeUpdate(callback) {
-    subscribe(
-      this.events.beforeUpdate,
-      ({ detail }) => callback({
-        currentState: this.state,
-        updatedState: detail.updatedState
-      }),
-      this.eventScope
-    );
-  }
+	/* ======================================================================== */
 
-  /* ======================================================================== */
+	onUpdate(callback) {
+		this.subscribeToEvent(this.events.update, callback);
+	}
 
-  update = async(updatedState, options = {}) => {
-    publish(this.events.beforeUpdate, { updatedState }, this.eventScope);
+	onBeforeUpdate(callback) {
+		this.subscribeToEvent(this.events.beforeUpdate, callback);
+	}
 
-    this.state = await this.transformState(
-      updatedState,
-      {
-        ...this.state,
-        ...updatedState
-      },
-      options
-    );
+	/* ======================================================================== */
 
-    publish(this.events.update, { updatedState }, this.eventScope);
+	transformState = async (updatedState, state, options) => {
+		return this.transforms.reduce(async (currentState, transform) => {
+			try {
+				return {
+					...(await currentState),
+					...(await transform({
+						currentState: await currentState,
+						updatedState,
+						options
+					}))
+				};
+			} catch (err) {
+				throw new Error(err);
+			}
+		}, state);
+	};
 
-    return this.state;
-  }
+	/* ======================================================================== */
 
-  transformState(updatedState, state, options) {
-    return new Promise((resolve, reject) => {
-        try {
-          const transformedState = this.transforms.reduce(
-            async (currentState, transform) => ({
-                ...await currentState,
-                ...await transform({
-                  currentState,
-                  updatedState,
-                  options
-                })
-            }),
-            state
-          );
+	update = async (updatedState, options = {}) => {
+		publish(this.events.beforeUpdate, { updatedState }, this.eventScope);
 
-          resolve(transformedState);
-        } catch(err) {
-          reject(err);
-        }
-    });
-  }
+		this.state = await this.transformState(
+			updatedState,
+			{
+				...this.state,
+				...updatedState
+			},
+			options
+		);
+
+		publish(this.events.update, { updatedState }, this.eventScope);
+
+		return this.state;
+	};
+
+	delete = async (property, options = {}) => {
+		if (!(property in this.state)) {
+			throw new ReferenceError(
+				`Cannot delete property ${property} from state. State is currently: ${JSON.stringify(
+					this.state
+				)}`
+			);
+		}
+
+		publish(this.events.beforeUpdate, {}, this.eventScope);
+
+		delete this.state[property];
+
+		this.state = await this.transformState({}, this.state, options);
+
+		publish(this.events.update, {}, this.eventScope);
+
+		return this.state;
+	};
 }
