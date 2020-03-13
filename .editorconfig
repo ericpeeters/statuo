@@ -16,3 +16,6 @@ charset = utf-8
 [*.{html,js,scss,ts}]
 indent_style = tab
 indent_size = 4
+
+[build/**]
+end_of_line = lf
