@@ -1,6 +1,6 @@
 {
 	"name": "statuo",
-	"version": "0.0.1",
+	"version": "0.0.1-beta.1",
 	"description": "Container based state management library",
 	"main": "index.js",
 	"module": "esm/index.js",
