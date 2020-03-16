@@ -2,7 +2,7 @@
 
 Container based state management
 
-This library borrows some ideas from the Flux architecture pattern. Read more about Flux here: https://facebook.github.io/flux/.
+This library borrows some ideas from the Flux architecture pattern.
 
 What this library aims to solve is the complexity that comes from actions being mandatory. Without actions it is not possible to modify the state of the application.
 
