@@ -15,12 +15,13 @@ function getUniqueContainerId() {
 /* ========================================================================== */
 
 export class Container {
-	constructor({ state = {}, transforms = [] } = {}) {
+	constructor({
+		state = {},
+		transforms = []
+	} = {}) {
 		this.state = state;
 		this.transforms = transforms;
 		this.eventScope = { scope: getUniqueContainerId() };
-
-		publish(this.events.ready, null, this.eventScope);
 	}
 
 	/* ======================================================================== */

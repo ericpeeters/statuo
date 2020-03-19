@@ -1,6 +1,6 @@
 {
 	"name": "statuo",
-	"version": "0.0.1-beta.1",
+	"version": "0.0.1-beta.3",
 	"description": "Container based state management library",
 	"main": "index.js",
 	"module": "esm/index.js",
@@ -9,14 +9,13 @@
 		"example": "examples"
 	},
 	"scripts": {
-		"build": "./build/index.sh",
+		"build": "bash ./build/index.sh",
 		"test": "jest",
 		"test:coverage": "jest --coverage=true"
 	},
 	"author": "Eric Peeters",
 	"license": "MIT",
 	"devDependencies": {
-		"@babel/cli": "^7.8.4",
 		"@babel/core": "^7.8.7",
 		"@babel/plugin-proposal-class-properties": "^7.8.3",
 		"@babel/preset-env": "^7.8.7",
