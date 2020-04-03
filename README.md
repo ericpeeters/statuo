@@ -4,9 +4,9 @@ Container based state management
 
 This library borrows some ideas from the Flux architecture pattern.
 
-What this library aims to solve is the complexity that comes from actions being mandatory. Without actions it is not possible to modify the state of the application.
+What this library aims to solve is the added complexity of all the different layers involved with state management.
 
-The separation of UI and state becomes a lot more natural when application components can request to modify the state directly and allow other components to react to these changes. Components are written in a manner that makes them responsible for a piece of state, just like they probably listen to a piece of the state changing.
+The separation of UI and state is achieved by letting application components update the state and allow other components to react to these changes. Components are written in a manner that makes them responsible for a piece of state, just like they probably listen to a piece of the state changing.
 
 This library mixes a state containers with a simple pub-sub API that allows your application to separate the entire application state from very specific pieces of your application.
 
@@ -87,7 +87,7 @@ Sometimes we want certain state to always behave in a certain way. We can use tr
 
 When you call `.update()` on a container instance, it will always run all transforms immediately after updating the state.
 
-It also allows you to pass additional options, these options will always find their way to all transforms of the container. This allows you to customize transform behavior based on options. You can invent _any_ option you need to determine which transforms should or should not run, or apply logic to a transform.
+It also allows you to pass additional options, these options will always find their way to all transforms of the container. This allows you to customize transform behavior. You can invent _any_ option you need to determine which transforms should or should not run, or apply logic to a transform.
 
 An example of a transform:
 
@@ -127,16 +127,16 @@ export const container = new Container({
 ```javascript
 import { container } from 'y';
 
-const incrementUntilThree = container => container.update(
+const countToThree = container => container.update(
   { count: container.state.count + 1 },
   { max: 3 }
 );
 
-incrementUntilThree(); // state = { count: 1 }
-incrementUntilThree(); // state = { count: 2 }
-incrementUntilThree(); // state = { count: 3 }
+countToThree(); // state = { count: 1 }
+countToThree(); // state = { count: 2 }
+countToThree(); // state = { count: 3 }
 // Our transform makes sure the state is reset
-incrementUntilThree(); // state = { count: 0 }
+countToThree(); // state = { count: 0 }
 ```
 
 ---
@@ -168,4 +168,4 @@ const currentContainer = manager.getContainer();
 
 Here we see an example of 2 containers being registered to a ContainerManager. The trick is in the second parameter, this parameter is either a string with the key of the container or a function that defines how to retrieve the key. The key can also be provided by calling `.getContainer(key)`. In the example above, if our HTML has `<body data-container="filters" />`, it will create an instance of the FilterContainer and pass it to all components that ask the manager for a reference.
 
-This allows us to 'inject' the right container to our components or features when they need it and makes sure they all look at the same instance.
+This allows us to 'inject' the right container to our components or features when they need it and makes sure they all of them look at the same instance.
