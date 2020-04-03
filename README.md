@@ -8,7 +8,7 @@ What this library aims to solve is the added complexity of all the different lay
 
 The separation of UI and state is achieved by letting application components update the state and allow other components to react to these changes. Components are written in a manner that makes them responsible for a piece of state, just like they probably listen to a piece of the state changing.
 
-This library mixes a state containers with a simple pub-sub API that allows your application to separate the entire application state from very specific pieces of your application.
+This library mixes state containers with a simple pub-sub API that allows your application to separate the entire application state from very specific pieces of your application.
 
 ## API
 
